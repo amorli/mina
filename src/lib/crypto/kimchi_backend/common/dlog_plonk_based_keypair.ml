@@ -59,11 +59,20 @@ module type Inputs_intf = sig
   module Index : sig
     type t
 
-    (** [create gates nb_public lookup_tables nb_prev_challanges srs] *)
+    (** [create
+          gates
+          nb_public
+          lookup_tables
+          indexed_runtime_tables_cfg
+          customed_runtime_tables_cfg
+          nb_prev_challanges
+          srs] *)
     val create :
          Gate_vector.t
       -> int
       -> Scalar_field.t Kimchi_types.lookup_table array
+      -> (int32 * int) array
+      -> (int32 * Scalar_field.t array) array
       -> int
       -> Urs.t
       -> t
@@ -178,9 +187,12 @@ module Make (Inputs : Inputs_intf) = struct
     in
     (* TODO pass lookup tables info *)
     let lookup_tables = [||] in
+    let indexed_runtime_table_cfg = [||] in
+    let customed_runtime_table_cfg = [||] in
     let index =
       (* This is the corresponding caml_pasta_fp_plonk_index_create *)
-      Inputs.Index.create gates public_input_size lookup_tables prev_challenges
+      Inputs.Index.create gates public_input_size lookup_tables
+        indexed_runtime_table_cfg customed_runtime_table_cfg prev_challenges
         (load_urs ())
     in
     { index; cs }

@@ -1,6 +1,7 @@
 use crate::arkworks::CamlFp;
 use crate::{gate_vector::fp::CamlPastaFpPlonkGateVectorPtr, srs::fp::CamlFpSrs};
 use ark_poly::EvaluationDomain;
+use kimchi::circuits::lookup::runtime_tables::{RuntimeTableCfg, RuntimeTableSpec};
 use kimchi::circuits::lookup::tables::caml::CamlLookupTable;
 use kimchi::circuits::{constraints::ConstraintSystem, gate::CircuitGate};
 use kimchi::{linearization::expr_linearization, prover_index::ProverIndex};
@@ -42,6 +43,11 @@ pub fn caml_pasta_fp_plonk_index_create(
     gates: CamlPastaFpPlonkGateVectorPtr,
     public: ocaml::Int,
     lookup_tables: Vec<CamlLookupTable<CamlFp>>,
+    // RuntimeTableCfg
+    // IMPROVEME: Enum is not provided by ocaml-gen, therefore creating to
+    // separate arguments
+    indexed_runtime_tables_cfg: Vec<(i32, usize)>,
+    customed_runtime_tables_cfg: Vec<(i32, Vec<CamlFp>)>,
     prev_challenges: ocaml::Int,
     srs: CamlFpSrs,
 ) -> Result<CamlPastaFpPlonkIndex, ocaml::Error> {
@@ -56,13 +62,35 @@ pub fn caml_pasta_fp_plonk_index_create(
         })
         .collect();
 
+    // Lookup tables
     let lookup_tables = lookup_tables.into_iter().map(Into::into).collect();
+
+    // Runtime tables
+    let mut runtime_tables: Vec<RuntimeTableCfg<Fp>> = indexed_runtime_tables_cfg
+        .into_iter()
+        .map(|(id, len)| RuntimeTableSpec { id, len })
+        .map(|s| RuntimeTableCfg::Indexed(s))
+        .collect();
+
+    runtime_tables.extend(
+        customed_runtime_tables_cfg
+            .into_iter()
+            .map(|(id, first_column)| {
+                let first_column: Vec<Fp> = first_column.into_iter().map(Into::into).collect();
+                RuntimeTableCfg::Custom { id, first_column }
+            }),
+    );
 
     // create constraint system
     let cs = match ConstraintSystem::<Fp>::create(gates)
         .public(public as usize)
         .prev_challenges(prev_challenges as usize)
         .lookup(lookup_tables)
+        .runtime(if runtime_tables.len() == 0 {
+            None
+        } else {
+            Some(runtime_tables)
+        })
         .build()
     {
         Err(_) => {
