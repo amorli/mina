@@ -7,8 +7,8 @@ let TestExecutive = ../../Command/TestExecutive.dhall
 
 let dependsOn = [
     { name = "TestnetIntegrationTests", key = "build-test-executive" },
-    { name = "MinaArtifactBullseye", key = "daemon-berkeley-bullseye-docker-image" },
-    { name = "MinaArtifactBullseye", key = "archive-bullseye-docker-image" }
+    { name = "MinaArtifactBullseyeWithInstrumentation", key = "daemon-berkeley-bullseye-instrumented-docker-image" },
+    { name = "MinaArtifactBullseyeWithInstrumentation", key = "archive-bullseye-instrumented-docker-image" }
 ]
 let dependsOnJs = [
     { name = "TestnetIntegrationTests", key = "build-test-executive" },

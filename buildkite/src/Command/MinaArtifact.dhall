@@ -73,6 +73,7 @@ let pipeline : DebianVersions.DebVersion -> Pipeline.Config.Type = \(debVersion 
         let archiveSpec = DockerImage.ReleaseSpec::{
           deps=DebianVersions.dependsOn debVersion,
           service="mina-archive",
+          network="berkeley",
           deb_codename="${DebianVersions.lowerName debVersion}",
           step_key="archive-${DebianVersions.lowerName debVersion}-docker-image"
         }

@@ -4,6 +4,7 @@ open Currency
 open Signature_lib
 open Mina_base
 open Integration_test_lib
+open Coverage_manager
 
 let aws_region = "us-west-2"
 
@@ -65,6 +66,7 @@ module Network_config = struct
   type t =
     { mina_automation_location : string
     ; debug_arg : bool
+    ; generate_code_coverage : bool
     ; check_capacity : bool
     ; check_capacity_delay : int
     ; check_capacity_retries : int
@@ -89,8 +91,8 @@ module Network_config = struct
     assoc
 
   let expand ~logger ~test_name ~(cli_inputs : Cli_inputs.t) ~(debug : bool)
-      ~(test_config : Test_config.t) ~(images : Test_config.Container_images.t)
-      =
+      ~(generate_code_coverage : bool) ~(test_config : Test_config.t)
+      ~(images : Test_config.Container_images.t) =
     let { requires_graphql
         ; genesis_ledger
         ; block_producers
@@ -326,6 +328,7 @@ module Network_config = struct
     (* NETWORK CONFIG *)
     { mina_automation_location = cli_inputs.mina_automation_location
     ; debug_arg = debug
+    ; generate_code_coverage
     ; check_capacity = cli_inputs.check_capacity
     ; check_capacity_delay = cli_inputs.check_capacity_delay
     ; check_capacity_retries = cli_inputs.check_capacity_retries
@@ -417,6 +420,7 @@ module Network_manager = struct
         Kubernetes_network.Workload_to_deploy.t Core.String.Map.t
     ; workloads_by_id :
         Kubernetes_network.Workload_to_deploy.t Core.String.Map.t
+    ; generate_code_coverage : bool
     ; mutable deployed : bool
     ; genesis_keypairs : Network_keypair.t Core.String.Map.t
     }
@@ -668,6 +672,7 @@ module Network_manager = struct
       ; testnet_dir
       ; testnet_log_filter
       ; constants = network_config.constants
+      ; generate_code_coverage = network_config.generate_code_coverage
       ; seed_workloads
       ; block_producer_workloads
       ; snark_coordinator_workloads
@@ -806,6 +811,17 @@ module Network_manager = struct
     [%log' info t.logger] "Cleaning up network configuration" ;
     let%bind () = File_system.remove_dir t.testnet_dir in
     Deferred.unit
+
+  let generate_code_coverage t network =
+    if t.generate_code_coverage then
+      let open Malleable_error.Let_syntax in
+      let coverage_manager = Coverage_manager.create ~logger:t.logger in
+      let%bind _ =
+        Coverage_manager.download_coverage_data_from_nodes coverage_manager
+          ~nodes:(Kubernetes_network.all_nodes network)
+      in
+      Malleable_error.ok_unit
+    else Malleable_error.ok_unit
 
   let destroy t =
     Deferred.Or_error.try_with (fun () -> destroy t)

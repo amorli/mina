@@ -49,7 +49,10 @@ let toolchainImage = \(debVersion : DebVersion) ->
 let dependsOn = \(debVersion : DebVersion) ->
   merge {
     Bookworm = [{ name = "MinaArtifactBookworm", key = "build-deb-pkg" }]
-    , Bullseye = [{ name = "MinaArtifactBullseye", key = "build-deb-pkg" }]
+    , Bullseye = [
+      { name = "MinaArtifactBullseye", key = "build-deb-pkg" },
+      { name = "MinaArtifactBullseyeWithInstrumentation", key = "build-deb-pkg-instr" }
+    ]
     , Buster = [{ name = "MinaArtifactBuster", key = "build-deb-pkg" }]
     , Jammy = [{ name = "MinaArtifactJammy", key = "build-deb-pkg" }]
     , Focal = [{ name = "MinaArtifactFocal", key = "build-deb-pkg" }]

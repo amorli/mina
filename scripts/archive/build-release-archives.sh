@@ -29,7 +29,12 @@ esac
 
 echo "--- Building Mina archive package"
 
+if [ -z ${DUNE_INSTRUMENT_WITH+x} ]; then
 PROJECT="mina-archive"
+else
+PROJECT="mina-archive-instrumented"
+fi 
+
 BUILD_DIR="deb_build"
 
 ###### archiver deb

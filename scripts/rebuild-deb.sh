@@ -271,15 +271,22 @@ build_deb mina-zkapp-test-transaction
 ##################################### END SNAPP TEST TXN PACKAGE #######################################
 
 ##################################### BERKELEY PACKAGE #######################################
+
+if [ -z ${DUNE_INSTRUMENT_WITH+x} ]; then
+MINA_DEB_NAME=mina-berkeley
+else
+MINA_DEB_NAME=mina-instrumented-berkeley
+fi 
+
 echo "------------------------------------------------------------"
 echo "--- Building Mina Berkeley testnet signatures deb without keys:"
 
 mkdir -p "${BUILDDIR}/DEBIAN"
-create_control_file mina-berkeley "${SHARED_DEPS}${DAEMON_DEPS}" 'Mina Protocol Client and Daemon'
+create_control_file "${MINA_DEB_NAME}" "${SHARED_DEPS}${DAEMON_DEPS}" 'Mina Protocol Client and Daemon'
 
 copy_common_daemon_configs berkeley testnet 'seed-lists/berkeley_seeds.txt'
 
-build_deb mina-berkeley
+build_deb "${MINA_DEB_NAME}"
 
 ##################################### END BERKELEY PACKAGE #######################################
 
