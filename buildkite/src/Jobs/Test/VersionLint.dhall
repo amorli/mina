@@ -15,7 +15,7 @@ let Size = ../../Command/Size.dhall
 let buildTestCmd : Text -> Size -> Command.Type = \(release_branch : Text) -> \(cmd_target : Size) ->
   Command.build
     Command.Config::{
-      commands = [ Cmd.run "./buildkite/scripts/version-linter.sh ${release_branch}" ],
+      commands = RunInToolchain.runInToolchain ([] : List Text) "buildkite/scripts/version-linter.sh ${release_branch}",
       label = "Versioned type linter",
       key = "version-linter",
       target = cmd_target,
