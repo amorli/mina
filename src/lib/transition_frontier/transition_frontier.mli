@@ -39,6 +39,14 @@ type Structured_log_events.t += Applying_diffs of { diffs : Yojson.Safe.t list }
 type Structured_log_events.t += Persisted_frontier_loaded
   [@@deriving register_event]
 
+type Structured_log_events.t += Persisted_frontier_fresh_boot
+  [@@deriving register_event]
+
+type Structured_log_events.t += Bootstrap_required [@@deriving register_event]
+
+type Structured_log_events.t += Persisted_frontier_dropped
+  [@@deriving register_event]
+
 val max_catchup_chunk_length : int
 
 val catchup_tree : t -> Catchup_tree.t
