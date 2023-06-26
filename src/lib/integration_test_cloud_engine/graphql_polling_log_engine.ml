@@ -33,13 +33,9 @@ let event_reader { event_reader; _ } = event_reader
 
 let parse_event_from_log_entry ~logger log_entry =
   let open Or_error.Let_syntax in
-  let open Json_parsing in
   Or_error.try_with_join (fun () ->
-      let payload = Yojson.Safe.from_string log_entry in
       let%map event =
-        let%bind msg =
-          parse (parser_from_of_yojson Logger.Message.of_yojson) payload
-        in
+        let%bind msg = Util.log_entry_from_string log_entry in
         let event_id =
           Option.map ~f:Structured_log_events.string_of_id msg.event_id
         in

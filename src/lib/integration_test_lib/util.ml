@@ -90,3 +90,13 @@ let rec prompt_continue prompt_string =
   print_newline () ;
   if Char.equal c 'y' || Char.equal c 'Y' then Deferred.unit
   else prompt_continue prompt_string
+
+let log_entry_from_string log_entry =
+  let open Or_error.Let_syntax in
+  let open Json_parsing in
+  Or_error.try_with_join (fun () ->
+      let payload = Yojson.Safe.from_string log_entry in
+      let%bind msg =
+        parse (parser_from_of_yojson Logger.Message.of_yojson) payload
+      in
+      Or_error.return msg )

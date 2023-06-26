@@ -431,4 +431,76 @@ module Make (Inputs : Intf.Test.Inputs_intf) = struct
     else
       let error = String.concat error_logs ~sep:"\n  " in
       Malleable_error.hard_error_string ("Replayer errors:\n  " ^ error)
+
+  let get_all_filtered_log_entries_node node =
+    let open Deferred.Or_error in
+    match%bind.Deferred
+      Network.Node.get_filtered_log_entries ~last_log_index_seen:0 node
+    with
+    | Ok log_entries ->
+        let logs = Array.to_list log_entries in
+        let logs =
+          List.filter_map logs ~f:(fun log_entry ->
+              match Util.log_entry_from_string log_entry with
+              | Ok msg ->
+                  return (Some msg.message)
+              | Error _ ->
+                  return None )
+        in
+        logs
+    | Error err ->
+        fail err
+
+  let assert_filtered_log_contains node expected_logs =
+    let open Malleable_error.Let_syntax in
+    let%bind log_entries =
+      get_all_filtered_log_entries_node node
+      |> Deferred.bind ~f:Malleable_error.or_hard_error
+    in
+    Malleable_error.List.iter expected_logs ~f:(fun expected_log ->
+        if
+          List.exists
+            ~f:(fun log_entry ->
+              String.is_substring log_entry ~substring:expected_log )
+            log_entries
+        then Malleable_error.return ()
+        else
+          Malleable_error.hard_error_format
+            "Filtered logs does not contain expected entry '%s' for node %s "
+            expected_log (Network.Node.id node) )
+
+  let assert_filtered_log_does_not_contain node expected_logs =
+    let open Malleable_error.Let_syntax in
+    let%bind log_entries =
+      get_all_filtered_log_entries_node node
+      |> Deferred.bind ~f:Malleable_error.or_hard_error
+    in
+    Malleable_error.List.iter expected_logs ~f:(fun expected_log ->
+        if
+          List.exists
+            ~f:(fun log_entry ->
+              String.is_substring log_entry ~substring:expected_log )
+            log_entries
+        then
+          Malleable_error.hard_error_format
+            "Filtered logs does contain unexpected entry '%s' for node %s "
+            expected_log (Network.Node.id node)
+        else Malleable_error.return () )
+
+  let assert_succesfull_load ~fresh_state ~sync_needed node =
+    let open Malleable_error.Let_syntax in
+    let%bind () =
+      assert_filtered_log_contains node [ "Persisted_frontier_loaded" ]
+    in
+    let fresh_boot_log_entries =
+      [ "Persistent frontier database does not exist"
+      ; "Persistent frontier dropped"
+      ]
+    in
+    let log_entries =
+      if sync_needed then fresh_boot_log_entries @ [ "Bootstrap required" ]
+      else fresh_boot_log_entries
+    in
+    if fresh_state then assert_filtered_log_does_not_contain node log_entries
+    else assert_filtered_log_contains node log_entries
 end
