@@ -26,7 +26,7 @@ def download_type_shapes(role,branch,sha1) :
 def type_shape_file(sha1) :
   # created by buildkite build-artifact script
   # loaded to cloud bucket
-  sha1 + '-type-shapes.txt'
+  return sha1 + '-type_shape.txt'
 
 def make_type_shape_dict(type_shape_file):
   shape_dict=dict()
