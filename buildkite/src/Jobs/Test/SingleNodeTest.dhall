@@ -31,7 +31,7 @@ let buildTestCmd : Text -> Text -> Size -> Command.Type = \(profile : Text) -> \
   let key = "single-node-tests-${profile}" in
   Command.build
     Command.Config::{
-      commands = RunInToolchain.runInToolchain ([] : List Text) "buildkite/scripts/single-node-tests.sh ${path} && buildkite/scripts/upload-partial-coverage-data.sh ${key} dev",
+      commands = RunInToolchain.runInToolchain ["DUNE_INSTRUMENT_WITH=bisect_ppx", "COVERALLS_TOKEN"] "buildkite/scripts/single-node-tests.sh ${path} && buildkite/scripts/upload-partial-coverage-data.sh ${key} dev",
       label = "${profile} single-node-tests",
       key = key,
       target = cmd_target,

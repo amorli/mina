@@ -10,7 +10,7 @@ let dependsOn =  [
     { name = "DaemonUnitTest", key = "unit-test-dev" },
     { name = "DelegationBackendUnitTest", key = "delegation-backend-unit-tests" },
     { name = "FuzzyZkappTest", key = "fuzzy-zkapp-unit-test-dev" },
-    { name = "SnarkyJSTest", key = "snarkyjs-bindings-test" },
+    { name = "SingleNodeTest", key = "single-node-tests-dev" },
     { name = "ZkappTestToolUnitTest", key = "zkapp-tool-unit-test-dev" },
     { name = "TestnetIntegrationTests", key = "integration-test-peers-reliability"},
     { name = "TestnetIntegrationTests", key = "integration-test-chain-reliability"},
