@@ -7,8 +7,8 @@ if [[ $# -ne 1 ]]; then
     exit 1
 fi
 
-apt-get update
-apt-get install -y git apt-transport-https ca-certificates tzdata curl
+# Don't prompt for answers during apt-get install
+export DEBIAN_FRONTEND=noninteractive
 
 TESTNET_NAME="berkeley"
 
