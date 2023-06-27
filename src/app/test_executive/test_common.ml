@@ -501,6 +501,6 @@ module Make (Inputs : Intf.Test.Inputs_intf) = struct
       if sync_needed then fresh_boot_log_entries @ [ "Bootstrap required" ]
       else fresh_boot_log_entries
     in
-    if fresh_state then assert_filtered_log_does_not_contain node log_entries
-    else assert_filtered_log_contains node log_entries
+    if fresh_state then assert_filtered_log_contains node log_entries
+    else assert_filtered_log_does_not_contain node log_entries
 end
