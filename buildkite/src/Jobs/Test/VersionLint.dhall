@@ -19,7 +19,7 @@ let dependsOn = [
 
 in 
 
-let buildTestCmd : Text -> Size -> Command.Type = \(release_branch : Text) -> \(cmd_target : Size) -> \(dependsOn : List Command.TaggedKey.Type) ->
+let buildTestCmd : Text -> Size -> List Command.TaggedKey.Type -> Command.Type = \(release_branch : Text) -> \(cmd_target : Size) -> \(dependsOn : List Command.TaggedKey.Type) ->
   Command.build
     Command.Config::{
       commands = RunInToolchain.runInToolchain ([] : List Text) "buildkite/scripts/version-linter.sh ${release_branch}",
@@ -27,7 +27,7 @@ let buildTestCmd : Text -> Size -> Command.Type = \(release_branch : Text) -> \(
       key = "version-linter",
       target = cmd_target,
       docker = None Docker.Type,
-      artifact_paths = [ S.contains "core_dumps/*" ]
+      artifact_paths = [ S.contains "core_dumps/*" ],
       depends_on = dependsOn
     }
 
