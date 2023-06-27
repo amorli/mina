@@ -10,6 +10,9 @@ fi
 # Don't prompt for answers during apt-get install
 export DEBIAN_FRONTEND=noninteractive
 
+apt-get update
+apt-get install -y git apt-transport-https ca-certificates tzdata curl
+
 TESTNET_NAME="berkeley"
 
 git config --global --add safe.directory /workdir
