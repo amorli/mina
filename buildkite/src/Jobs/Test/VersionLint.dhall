@@ -25,7 +25,7 @@ let buildTestCmd : Text -> Size -> List Command.TaggedKey.Type -> Command.Type =
         commands = [
           Cmd.runInDocker
             Cmd.Docker::{
-              image = (../Constants/ContainerImages.dhall).ubuntu2004
+              image = (../../Constants/ContainerImages.dhall).ubuntu2004
             }
             "buildkite/scripts/version-linter.sh ${release_branch}"
         ],    
