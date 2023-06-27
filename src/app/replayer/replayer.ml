@@ -141,9 +141,11 @@ let get_slot_hashes ~logger slot =
   in
   go slot
 
-let process_block_infos_of_state_hash ~logger pool state_hash ~f =
+let process_block_infos_of_state_hash ~logger pool ~state_hash ~start_slot ~f =
   match%bind
-    Caqti_async.Pool.use (fun db -> Sql.Block_info.run db state_hash) pool
+    Caqti_async.Pool.use
+      (fun db -> Sql.Block_info.run db ~state_hash ~start_slot)
+      pool
   with
   | Ok block_infos ->
       f block_infos
@@ -654,8 +656,9 @@ let main ~input_file ~output_file_opt ~archive_uri ~continue_on_error
       in
       [%log info] "Loading block information using target state hash" ;
       let%bind block_ids =
-        process_block_infos_of_state_hash ~logger pool target_state_hash
-          ~f:(fun block_infos ->
+        process_block_infos_of_state_hash ~logger pool
+          ~state_hash:target_state_hash
+          ~start_slot:input.start_slot_since_genesis ~f:(fun block_infos ->
             let ids = List.map block_infos ~f:(fun { id; _ } -> id) in
             (* build mapping from global slots to state and ledger hashes *)
             List.iter block_infos
@@ -668,19 +671,20 @@ let main ~input_file ~output_file_opt ~archive_uri ~continue_on_error
                     , Ledger_hash.of_base58_check_exn ledger_hash ) ) ;
             return (Int.Set.of_list ids) )
       in
-      (* check that genesis block is in chain to target hash
-         assumption: genesis block occupies global slot 0
-      *)
-      if Int64.Table.mem global_slot_hashes_tbl Int64.zero then
-        [%log info]
-          "Block chain leading to target state hash includes genesis block, \
-           length = %d"
-          (Int.Set.length block_ids)
-      else (
-        [%log fatal]
-          "Block chain leading to target state hash does not include genesis \
-           block" ;
-        Core_kernel.exit 1 ) ;
+      if Int64.equal input.start_slot_since_genesis 0L then
+        (* check that genesis block is in chain to target hash                                                                                                                                                                                          assumption: genesis block occupies global slot 0
+
+           if nonzero start slot, can't assume there's a block at that slot *)
+        if Int64.Table.mem global_slot_hashes_tbl Int64.zero then
+          [%log info]
+            "Block chain leading to target state hash includes genesis block, \
+             length = %d"
+            (Int.Set.length block_ids)
+        else (
+          [%log fatal]
+            "Block chain leading to target state hash does not include genesis \
+             block" ;
+          Core_kernel.exit 1 ) ;
       (* some mutable state, less painful than passing epoch ledgers throughout *)
       let staking_epoch_ledger = ref ledger in
       let next_epoch_ledger = ref ledger in
@@ -748,7 +752,10 @@ let main ~input_file ~output_file_opt ~archive_uri ~continue_on_error
             let open Deferred.Let_syntax in
             match%map
               Caqti_async.Pool.use
-                (fun db -> Sql.Internal_command.run db id)
+                (fun db ->
+                  Sql.Internal_command.run db
+                    ~start_slot:input.start_slot_since_genesis
+                    ~internal_cmd_id:id )
                 pool
             with
             | Ok [] ->
@@ -1043,6 +1050,14 @@ let main ~input_file ~output_file_opt ~archive_uri ~continue_on_error
           let state_hash, _ledger_hash =
             get_slot_hashes ~logger last_global_slot_since_genesis
           in
+          let write_checkpoint_file () =
+            Option.iter !checkpoint_target ~f:(fun target ->
+                if Int64.(last_global_slot_since_genesis >= target) then (
+                  incr_checkpoint_target () ;
+                  Async.don't_wait_for
+                    (write_replayer_checkpoint ~logger ~ledger
+                       ~last_global_slot_since_genesis ) ) )
+          in
           let rec count_txns ~signed_count ~zkapp_count ~fee_transfer_count
               ~coinbase_count = function
             | [] ->
@@ -1162,19 +1177,12 @@ let main ~input_file ~output_file_opt ~archive_uri ~continue_on_error
             let%bind () = run_transactions () in
             check_ledger_hash_at_slot () ;
             let%map () = check_account_accessed () in
-            log_state_hash_on_next_slot last_global_slot_since_genesis
+            log_state_hash_on_next_slot last_global_slot_since_genesis ;
+            write_checkpoint_file ()
         in
         (* a sequence is a command type, slot, sequence number triple *)
         let get_internal_cmd_sequence (ic : Sql.Internal_command.t) =
           (`Internal_command, ic.global_slot_since_genesis, ic.sequence_no)
-        in
-        let _write_checkpoint_file () =
-          Option.iter !checkpoint_target ~f:(fun target ->
-              if Int64.(last_global_slot_since_genesis >= target) then (
-                incr_checkpoint_target () ;
-                Async.don't_wait_for
-                  (write_replayer_checkpoint ~logger ~ledger
-                     ~last_global_slot_since_genesis ) ) )
         in
         let get_user_cmd_sequence (uc : Sql.User_command.t) =
           (`User_command, uc.global_slot_since_genesis, uc.sequence_no)
