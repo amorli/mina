@@ -4,13 +4,12 @@ let ContainerImages = ./ContainerImages.dhall
 let S = ../Lib/SelectFiles.dhall
 let D = S.PathPattern
 
-let DebVersion = < Bookworm | Bullseye | Bullseye-Slim | Buster | Jammy | Focal >
+let DebVersion = < Bookworm | Bullseye | Buster | Jammy | Focal >
 
 let capitalName = \(debVersion : DebVersion) ->
   merge {
     Bookworm = "Bookworm"
     , Bullseye = "Bullseye"
-    , Bullseye-Slim = "Bullseye-Slim"
     , Buster = "Buster"
     , Jammy = "Jammy"
     , Focal = "Focal"
@@ -20,7 +19,6 @@ let lowerName = \(debVersion : DebVersion) ->
   merge {
     Bookworm = "bookworm"
     , Bullseye = "bullseye"
-    , Bullseye-Slim = "bullseye-slim"
     , Buster = "buster"
     , Jammy = "jammy"
     , Focal = "focal"
@@ -32,7 +30,6 @@ let toolchainRunner = \(debVersion : DebVersion) ->
   merge {
     Bookworm = RunInToolchain.runInToolchainBookworm
     , Bullseye = RunInToolchain.runInToolchainBullseye
-    , Bullseye-Slim = RunInToolchain.runInToolchainBullseye
     , Buster = RunInToolchain.runInToolchainBuster
     , Jammy = RunInToolchain.runInToolchainBookworm
     , Focal = RunInToolchain.runInToolchainBullseye
@@ -44,7 +41,6 @@ let toolchainImage = \(debVersion : DebVersion) ->
   merge { 
     Bookworm = ContainerImages.minaToolchainBookworm
     , Bullseye = ContainerImages.minaToolchainBullseye
-    , Bullseye-Slim = ContainerImages.minaToolchainBullseye
     , Buster = ContainerImages.minaToolchainBuster
     , Jammy = ContainerImages.minaToolchainBookworm
     , Focal = ContainerImages.minaToolchainBullseye
@@ -54,7 +50,6 @@ let dependsOn = \(debVersion : DebVersion) ->
   merge {
     Bookworm = [{ name = "MinaArtifactBookworm-devnet", key = "build-deb-pkg" }]
     , Bullseye = [{ name = "MinaArtifactBullseye-devnet", key = "build-deb-pkg" }]
-    , Bullseye-Slim = [{ name = "MinaArtifactBullseye-lightnet", key = "build-deb-pkg" }]
     , Buster = [{ name = "MinaArtifactBuster-devnet", key = "build-deb-pkg" }]
     , Jammy = [{ name = "MinaArtifactJammy-devnet", key = "build-deb-pkg" }]
     , Focal = [{ name = "MinaArtifactFocal-devnet", key = "build-deb-pkg" }]
@@ -91,7 +86,6 @@ let dirtyWhen = \(debVersion : DebVersion) ->
   merge {
     Bookworm = minimalDirtyWhen
     , Bullseye = bullseyeDirtyWhen
-    , Bullseye-Slim = bullseyeDirtyWhen
     , Buster = minimalDirtyWhen
     , Jammy = minimalDirtyWhen
     , Focal = minimalDirtyWhen
