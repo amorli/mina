@@ -7,7 +7,9 @@ if [[ $# -ne 1 ]]; then
     exit 1
 fi
 
-TESTNET_NAME=$0
+TESTNET_NAME=$1
+
+source buildkite/scripts/export-git-env-vars.sh
 
 # Don't prompt for answers during apt-get install
 export DEBIAN_FRONTEND=noninteractive
