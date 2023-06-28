@@ -22,7 +22,7 @@ in
 let buildTestCmd : Text -> Size -> List Command.TaggedKey.Type -> Command.Type = \(release_branch : Text) -> \(cmd_target : Size) -> \(dependsOn : List Command.TaggedKey.Type) ->
   Command.build
     Command.Config::{
-        commands = [          
+        commands =          
            ---Cmd.runInDocker
              ---Cmd.Docker::{
           ---     image = (../../Constants/ContainerImages.dhall).ubuntu2004
@@ -30,8 +30,7 @@ let buildTestCmd : Text -> Size -> List Command.TaggedKey.Type -> Command.Type =
           ---   "buildkite/scripts/download-mina-deb.sh berkeley"
          ---  ]
          ---  #
-          RunInToolchain.runInToolchain ([] : List Text) "buildkite/scripts/version-linter.sh ${release_branch}"
-        ],
+          RunInToolchain.runInToolchain ([] : List Text) "buildkite/scripts/version-linter.sh ${release_branch}",
       label = "Versioned type linter",
       key = "version-linter",
       target = cmd_target,
