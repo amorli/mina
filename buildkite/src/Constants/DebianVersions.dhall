@@ -48,11 +48,12 @@ let toolchainImage = \(debVersion : DebVersion) ->
 
 let dependsOn = \(debVersion : DebVersion) ->
   merge {
-    Bookworm = [{ name = "MinaArtifactBookworm", key = "build-deb-pkg" }]
-    , Bullseye = [{ name = "MinaArtifactBullseye", key = "build-deb-pkg" }]
-    , Buster = [{ name = "MinaArtifactBuster", key = "build-deb-pkg" }]
-    , Jammy = [{ name = "MinaArtifactJammy", key = "build-deb-pkg" }]
-    , Focal = [{ name = "MinaArtifactFocal", key = "build-deb-pkg" }]
+    Bookworm = [{ name = "MinaArtifactBookworm-devnet", key = "build-deb-pkg" }]
+    , Bullseye = [{ name = "MinaArtifactBullseye-devnet", key = "build-deb-pkg" }]
+    , Bullseye-Slim = [{ name = "MinaArtifactBullseye-lightnet", key = "build-deb-pkg" }]
+    , Buster = [{ name = "MinaArtifactBuster-devnet", key = "build-deb-pkg" }]
+    , Jammy = [{ name = "MinaArtifactJammy-devnet", key = "build-deb-pkg" }]
+    , Focal = [{ name = "MinaArtifactFocal-devnet", key = "build-deb-pkg" }]
   } debVersion
 
 -- Most debian builds are only used for public releases

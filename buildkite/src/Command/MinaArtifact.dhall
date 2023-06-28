@@ -14,6 +14,9 @@ let Libp2p = ./Libp2pHelperBuild.dhall
 let DockerImage = ./DockerImage.dhall
 let DebianVersions = ../Constants/DebianVersions.dhall
 
+
+let default_profile = "devnet"
+
 in
 
 let pipeline : DebianVersions.DebVersion -> Text -> Pipeline.Config.Type = \(debVersion : DebianVersions.DebVersion) -> \(profile : Text) ->
@@ -22,7 +25,7 @@ let pipeline : DebianVersions.DebVersion -> Text -> Pipeline.Config.Type = \(deb
         JobSpec::{
           dirtyWhen = DebianVersions.dirtyWhen debVersion,
           path = "Release",
-          name = "MinaArtifact${DebianVersions.capitalName debVersion}"
+          name = "MinaArtifact${DebianVersions.capitalName debVersion}-${profile}"
         },
       steps = [
         Libp2p.step debVersion,
