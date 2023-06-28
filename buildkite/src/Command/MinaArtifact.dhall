@@ -16,7 +16,7 @@ let DebianVersions = ../Constants/DebianVersions.dhall
 
 in
 
-let pipeline : DebianVersions.DebVersion -> Pipeline.Config.Type = \(debVersion : DebianVersions.DebVersion) ->
+let pipeline : DebianVersions.DebVersion -> Text -> Pipeline.Config.Type = \(debVersion : DebianVersions.DebVersion) -> \(profile : Text)
     Pipeline.Config::{
       spec =
         JobSpec::{
@@ -29,7 +29,7 @@ let pipeline : DebianVersions.DebVersion -> Pipeline.Config.Type = \(debVersion 
         Command.build
           Command.Config::{
             commands = DebianVersions.toolchainRunner debVersion [
-              "DUNE_PROFILE=devnet",
+              "DUNE_PROFILE=${profile}",
               "AWS_ACCESS_KEY_ID",
               "AWS_SECRET_ACCESS_KEY",
               "MINA_BRANCH=$BUILDKITE_BRANCH",
@@ -107,7 +107,8 @@ let pipeline : DebianVersions.DebVersion -> Pipeline.Config.Type = \(debVersion 
 
 in
 {
-  bullseye  = pipeline DebianVersions.DebVersion.Bullseye
-  , buster  = pipeline DebianVersions.DebVersion.Buster
-  , focal   = pipeline DebianVersions.DebVersion.Focal
+  bullseye  = pipeline DebianVersions.DebVersion.Bullseye "devnet"
+  , bullseye-slim  = pipeline DebianVersions.DebVersion.Bullseye "lightnet"
+  , buster  = pipeline DebianVersions.DebVersion.Buster "devnet"
+  , focal   = pipeline DebianVersions.DebVersion.Focal "devnet"
 }
