@@ -60,4 +60,8 @@
    integers
    transition_handler
    snark_worker
+   generated_graphql_queries
+   mina_graphql
+   with_hash
+   pickles
 ))

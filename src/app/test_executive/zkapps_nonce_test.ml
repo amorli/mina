@@ -61,10 +61,6 @@ module Make (Inputs : Intf.Test.Inputs_intf) = struct
     if !transactions_sent >= needed_for_padding then 0
     else needed_for_padding - !transactions_sent
 
-  let send_zkapp ~logger node zkapp_command =
-    incr transactions_sent ;
-    send_zkapp ~logger node zkapp_command
-
   (* Call [f] [n] times in sequence *)
   let repeat_seq ~n ~f =
     let open Malleable_error.Let_syntax in
