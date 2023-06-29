@@ -16,6 +16,10 @@ def set_error():
 def branch_commit(branch):
   result=subprocess.run(['git','log','-n','1','--format="%h"','--abbrev=7','--no-merges',f'{branch}'],
                         capture_output=True)
+  output = result.stdout.decode('ascii')
+  print(f'{branch} -> debug: {output}')
+  result=subprocess.run(['git','log','-n','1','--format="%h"','--abbrev=7','--no-merges',f'{branch}'],
+                        capture_output=True)
   sha1 = result.stdout.decode('ascii').replace('"','').replace('\n','')
   print (f'Branch {branch} is at commit {sha1}')
   return sha1
