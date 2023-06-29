@@ -16,13 +16,15 @@ def set_error():
 def branch_commit(branch):
   result=subprocess.run(['git','log','-n','1','--format="%h"','--abbrev=7','--no-merges',f'{branch}'],
                         capture_output=True)
-  return result.stdout.decode('ascii').replace('"','').replace('\n','')
+  sha1 = result.stdout.decode('ascii').replace('"','').replace('\n','')
+  print (f'Branch {branch} is at commit {sha1}')
+  return sha1
 
 def download_type_shapes(role,branch,sha1) :
   file=type_shape_file(sha1)
-  result=subprocess.run(['wget' ,f'https://storage.googleapis.com/mina-type-shapes/{file}'])
   print ('Downloading type shape file',file,'for',role,'branch',branch,'at commit',sha1)
-
+  result=subprocess.run(['wget' ,f'https://storage.googleapis.com/mina-type-shapes/{file}'])
+ 
 def type_shape_file(sha1) :
   # created by buildkite build-artifact script
   # loaded to cloud bucket
